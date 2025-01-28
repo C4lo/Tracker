@@ -63,4 +63,4 @@ function broadcast(data) {
   });
 }
 
-console.log("WebSocket-Server läuft auf ws://localhost:8080");
+//console.log("WebSocket-Server läuft auf ws://localhost:8080");
