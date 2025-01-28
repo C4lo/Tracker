@@ -1,4 +1,5 @@
 let initiativeList = [];
+let currentTurnIndex = 0; // Aktueller Turn
 
 // Funktion: Liste rendern
 function renderList(containerId, list, isDM = false) {
@@ -9,7 +10,7 @@ function renderList(containerId, list, isDM = false) {
     .sort((a, b) => b.initiative - a.initiative)
     .forEach((entry, index) => {
       const card = document.createElement("div");
-      card.className = `card ${index === 0 && !isDM ? "current" : ""}`;
+      card.className = `card ${index === currentTurnIndex ? "current" : ""}`;
       card.innerHTML = `
         <h3>${entry.name}</h3>
         <p>Initiative: ${entry.initiative}</p>
@@ -37,6 +38,21 @@ function renderDMTable() {
   renderList("initiative-list", initiativeList, true);
 }
 
+// Funktion: Nächster Zug
+function nextTurn() {
+  currentTurnIndex++;
+  // Zurück zum Anfang, wenn das Ende erreicht ist
+  if (currentTurnIndex >= initiativeList.length) {
+    currentTurnIndex = 0;
+  }
+  // Aktualisiere die Anzeige
+  renderInitiative();
+  renderDMTable();
+
+  // Synchronisiere mit allen Clients
+  sendMessage("nextTurn", currentTurnIndex);
+}
+
 // Formularverarbeitung
 function handleFormSubmit(event) {
   event.preventDefault();
@@ -52,6 +68,7 @@ function handleFormSubmit(event) {
   renderDMTable();
 }
 
+// Bearbeiten eines Eintrags
 function editEntry(id) {
   const entry = initiativeList.find((item) => item.id === id);
   if (entry) {
@@ -66,34 +83,65 @@ function editEntry(id) {
   }
 }
 
+// Löschen eines Eintrags
 function deleteEntry(id) {
   initiativeList = initiativeList.filter((item) => item.id !== id);
   sendMessage("delete", id);
   renderDMTable();
 }
 
-// WebSocket
+// WebSocket-Verbindung aufbauen
 const socket = new WebSocket("ws://localhost:8080");
 
-socket.addEventListener("open", () =>
-  console.log("Verbunden mit dem WebSocket-Server")
-);
+// Verbindung geöffnet
+socket.addEventListener("open", () => {
+  console.log("Verbunden mit dem WebSocket-Server");
+});
 
+// Nachricht vom Server empfangen
 socket.addEventListener("message", (event) => {
   const data = JSON.parse(event.data);
-  if (data.type === "update" || data.type === "init") {
-    initiativeList = data.payload;
 
-    if (document.getElementById("initiative-form")) {
-      renderDMTable(); // DM-Seite
-    } else if (document.getElementById("initiative-list")) {
-      renderInitiative(); // Spieler-Seite
-    }
+  switch (data.type) {
+    case "init":
+      initiativeList = data.payload;
+      if (document.getElementById("initiative-form")) {
+        renderDMTable();
+      } else {
+        renderInitiative();
+      }
+      break;
+
+    case "update":
+      initiativeList = data.payload;
+      if (document.getElementById("initiative-form")) {
+        renderDMTable();
+      } else {
+        renderInitiative();
+      }
+      break;
+
+    case "nextTurn":
+      console.log("Spieler empfängt nextTurn:", data.payload); //Debug-Log
+      currentTurnIndex = data.payload;
+      if (document.getElementById("initiative-form")) {
+        console.log("Bin auf der DM-Seite, rufe renderDMTable() auf");
+        renderDMTable();
+      } else {
+        console.log("Bin auf der Spieler-Seite, rufe renderInitiative() auf");
+        renderInitiative();
+      }
+      break;
+
+    default:
+      console.error("Unbekannter Nachrichtentyp:", data.type);
   }
 });
 
+// Nachricht senden
 function sendMessage(type, payload) {
-  socket.send(JSON.stringify({ type, payload }));
+  const message = JSON.stringify({ type, payload });
+  socket.send(message);
 }
 
 // Event Listener
