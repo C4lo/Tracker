@@ -30,6 +30,7 @@ function renderList(containerId, list, isDM = false) {
 
 // Spieleransicht
 function renderInitiative() {
+  console.log("renderInitiative() mit currentTurnIndex:", currentTurnIndex);
   renderList("initiative-list", initiativeList);
 }
 
@@ -91,7 +92,7 @@ function deleteEntry(id) {
 }
 
 // WebSocket-Verbindung aufbauen
-const socket = new WebSocket("ws://localhost:8080");
+const socket = new WebSocket("ws://192.168.2.40:8080");
 
 // Verbindung geöffnet
 socket.addEventListener("open", () => {

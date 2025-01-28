@@ -39,6 +39,7 @@ wss.on("connection", (ws) => {
         break;
 
       case "nextTurn":
+        console.log("Server empfängt nextTurn:", data.payload);
         currentTurnIndex = data.payload; // Turn-Index aktualisieren
         broadcast({ type: "nextTurn", payload: currentTurnIndex }); // Broadcast an alle Clients
         break;
