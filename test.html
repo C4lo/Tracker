@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <title>API Test</title>
+  </head>
+  <body>
+    <h1>Eintrag testen</h1>
+    <button onclick="addEntry()">Eintrag hinzufügen</button>
+    <script>
+      async function addEntry() {
+        const entry = {
+          name: "Testspieler",
+          initiative: 15,
+          hp: "Healthy",
+          type: "Player",
+        };
+
+        const response = await fetch("backend.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(entry),
+        });
+
+        const result = await response.json();
+        console.log("API Response:", result);
+        alert(
+          result.success ? "Erfolgreich gespeichert!" : "Fehler beim Speichern"
+        );
+      }
+    </script>
+  </body>
+</html>

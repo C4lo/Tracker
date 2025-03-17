@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Initiative Tracker - DM</title>
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Initiative Tracker - DM Verwaltung</h1>
+    </header>
+    <main>
+      <section id="entry-form">
+        <h2>Neuer Eintrag</h2>
+        <form id="initiative-form">
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" required />
+
+          <label for="initiative">Initiative:</label>
+          <input type="number" id="initiative" name="initiative" required />
+
+          <label for="hp">HP Status:</label>
+          <select id="hp" name="hp">
+            <option value="Healthy">Healthy</option>
+            <option value="Wounded">Wounded</option>
+            <option value="Critical">Critical</option>
+          </select>
+
+          <label for="type">Typ:</label>
+          <select id="type" name="type">
+            <option value="Player">Spieler</option>
+            <option value="Monster">Monster</option>
+          </select>
+
+          <button type="submit">Hinzufügen</button>
+        </form>
+      </section>
+
+      <section id="initiative-table">
+        <h2>Aktuelle Einträge</h2>
+        <div id="initiative-list"></div>
+      </section>
+      <button onclick="nextTurn()">Nächster Zug</button>
+    </main>
+    <footer>
+      <button onclick="window.location.href='../view/index.html'">
+        Zur Spieleransicht
+      </button>
+    </footer>
+    <script src="../script.js"></script>
+  </body>
+</html>

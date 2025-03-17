@@ -1,160 +1,112 @@
-let initiativeList = [];
-let currentTurnIndex = 0; // Aktueller Turn
+// Holt die Initiative-Liste vom Server
+const API_URL = "/initiativeTracker/backend.php"; // Stelle sicher, dass der Pfad korrekt ist
 
-// Funktion: Liste rendern
+// Holt die Initiative-Liste vom Server und zeigt sie an
+async function fetchInitiativeList() {
+  console.log("📢 fetchInitiativeList() wurde aufgerufen!");
+
+  try {
+    const response = await fetch(API_URL);
+    const data = await response.json();
+
+    console.log("📩 API-Antwort erhalten:", data); // Debugging
+
+    if (data.success) {
+      renderList("initiative-list", data.entries, true);
+    } else {
+      console.error("Fehler beim Laden der Daten:", data.message);
+    }
+  } catch (error) {
+    console.error("❌ Netzwerkfehler:", error);
+  }
+}
+
+// Funktion zum Rendern der Initiative-Tabelle
 function renderList(containerId, list, isDM = false) {
   const listContainer = document.getElementById(containerId);
-  listContainer.innerHTML = "";
+  listContainer.innerHTML = ""; // Alte Liste leeren
 
   list
     .sort((a, b) => b.initiative - a.initiative)
-    .forEach((entry, index) => {
+    .forEach((entry) => {
       const card = document.createElement("div");
-      card.className = `card ${index === currentTurnIndex ? "current" : ""}`;
+      card.className = "card";
       card.innerHTML = `
-        <h3>${entry.name}</h3>
-        <p>Initiative: ${entry.initiative}</p>
-        <p>HP: ${entry.hp}</p>
-        ${
-          isDM
-            ? `<p>Typ: ${entry.type}</p>
-        <button onclick="editEntry(${entry.id})">Bearbeiten</button>
-        <button onclick="deleteEntry(${entry.id})">Löschen</button>`
-            : ""
-        }
-      `;
-
+            <h3>${entry.name}</h3>
+            <p>Initiative: ${entry.initiative}</p>
+            <p>HP: ${entry.hp}</p>
+            ${
+              isDM
+                ? `<button onclick="deleteEntry(${entry.id})">Löschen</button>`
+                : ""
+            }
+        `;
       listContainer.appendChild(card);
     });
 }
 
-// Spieleransicht
-function renderInitiative() {
-  console.log("renderInitiative() mit currentTurnIndex:", currentTurnIndex);
-  renderList("initiative-list", initiativeList);
-}
+// Daten nach dem Laden der Seite abrufen
+document.addEventListener("DOMContentLoaded", fetchInitiativeList);
 
-// DM-Ansicht
-function renderDMTable() {
-  renderList("initiative-list", initiativeList, true);
-}
-
-// Funktion: Nächster Zug
-function nextTurn() {
-  currentTurnIndex++;
-  // Zurück zum Anfang, wenn das Ende erreicht ist
-  if (currentTurnIndex >= initiativeList.length) {
-    currentTurnIndex = 0;
-  }
-  // Aktualisiere die Anzeige
-  renderInitiative();
-  renderDMTable();
-
-  // Synchronisiere mit allen Clients
-  sendMessage("nextTurn", currentTurnIndex);
-}
-
-// Formularverarbeitung
-function handleFormSubmit(event) {
+// Fügt einen neuen Eintrag hinzu
+async function addEntry(event) {
   event.preventDefault();
+
   const name = document.getElementById("name").value;
   const initiative = parseInt(document.getElementById("initiative").value);
   const hp = document.getElementById("hp").value;
   const type = document.getElementById("type").value;
 
-  const newEntry = { id: Date.now(), name, initiative, hp, type };
-  initiativeList.push(newEntry);
-  sendMessage("add", newEntry);
-  event.target.reset();
-  renderDMTable();
-}
+  const entry = { name, initiative, hp, type };
 
-// Bearbeiten eines Eintrags
-function editEntry(id) {
-  const entry = initiativeList.find((item) => item.id === id);
-  if (entry) {
-    document.getElementById("name").value = entry.name;
-    document.getElementById("initiative").value = entry.initiative;
-    document.getElementById("hp").value = entry.hp;
-    document.getElementById("type").value = entry.type;
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(entry),
+    });
+    const result = await response.json();
 
-    initiativeList = initiativeList.filter((item) => item.id !== id);
-    sendMessage("delete", id);
-    renderDMTable();
+    if (result.success) {
+      fetchInitiativeList(); // Liste neu laden
+      document.getElementById("initiative-form").reset();
+    } else {
+      console.error("Fehler beim Speichern:", result.message);
+    }
+  } catch (error) {
+    console.error("Netzwerkfehler:", error);
   }
 }
 
-// Löschen eines Eintrags
-function deleteEntry(id) {
-  initiativeList = initiativeList.filter((item) => item.id !== id);
-  sendMessage("delete", id);
-  renderDMTable();
-}
+// Löscht einen Eintrag
+// Löscht einen Eintrag über die API
+async function deleteEntry(id) {
+  try {
+    const response = await fetch(API_URL, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    const result = await response.json();
 
-// WebSocket-Verbindung aufbauen
-const socket = new WebSocket("ws://192.168.2.40:8080");
-
-// Verbindung geöffnet
-socket.addEventListener("open", () => {
-  console.log("Verbunden mit dem WebSocket-Server");
-});
-
-// Nachricht vom Server empfangen
-socket.addEventListener("message", (event) => {
-  const data = JSON.parse(event.data);
-
-  switch (data.type) {
-    case "init":
-      initiativeList = data.payload;
-      if (document.getElementById("initiative-form")) {
-        renderDMTable();
-      } else {
-        renderInitiative();
-      }
-      break;
-
-    case "update":
-      initiativeList = data.payload;
-      if (document.getElementById("initiative-form")) {
-        renderDMTable();
-      } else {
-        renderInitiative();
-      }
-      break;
-
-    case "nextTurn":
-      console.log("Spieler empfängt nextTurn:", data.payload); //Debug-Log
-      currentTurnIndex = data.payload;
-      if (document.getElementById("initiative-form")) {
-        console.log("Bin auf der DM-Seite, rufe renderDMTable() auf");
-        renderDMTable();
-      } else {
-        console.log("Bin auf der Spieler-Seite, rufe renderInitiative() auf");
-        renderInitiative();
-      }
-      break;
-
-    default:
-      console.error("Unbekannter Nachrichtentyp:", data.type);
+    if (result.success) {
+      fetchInitiativeList(); // Liste nach dem Löschen neu laden
+    } else {
+      console.error("Fehler beim Löschen:", result.message);
+    }
+  } catch (error) {
+    console.error("Netzwerkfehler:", error);
   }
-});
-
-// Nachricht senden
-function sendMessage(type, payload) {
-  const message = JSON.stringify({ type, payload });
-  socket.send(message);
 }
 
-// Event Listener
+
+
+// Event Listener für das Formular
 if (document.getElementById("initiative-form")) {
   document
     .getElementById("initiative-form")
-    .addEventListener("submit", handleFormSubmit);
-  document.addEventListener("DOMContentLoaded", () => {
-    renderDMTable();
-  });
-} else if (document.getElementById("initiative-list")) {
-  document.addEventListener("DOMContentLoaded", () => {
-    renderInitiative();
-  });
+    .addEventListener("submit", addEntry);
 }
+
+// Lade Daten beim Start
+document.addEventListener("DOMContentLoaded", fetchInitiativeList);
