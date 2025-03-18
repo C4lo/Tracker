@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Party Verwaltung</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Party-Verwaltung</h1>
+
+    <!-- 🎲 Neue Party erstellen -->
+    <div id="create-party">
+      <h2>Neue Party erstellen</h2>
+      <input type="text" id="partyName" placeholder="Party-Name" />
+      <button onclick="createParty()">Erstellen</button>
+    </div>
+
+    <!-- 👥 Spieler zur Party hinzufügen -->
+    <div id="add-user-to-party">
+      <h2>Spieler hinzufügen</h2>
+      <select id="partySelect"></select>
+      <!-- Parties -->
+      <select id="userSelect"></select>
+      <!-- Spieler -->
+      <select id="roleSelect">
+        <option value="Player">Spieler</option>
+        <option value="DM">Dungeon Master</option>
+      </select>
+      <button onclick="addUserToParty()">Hinzufügen</button>
+    </div>
+
+    <!-- 📝 Liste aller Parties -->
+    <div id="party-list">
+      <h2>Meine Parties</h2>
+      <ul id="partyContainer"></ul>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
