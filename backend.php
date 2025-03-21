@@ -82,6 +82,59 @@ elseif ($_SERVER["REQUEST_METHOD"] === "DELETE") {
     $stmt->close();
     exit;
 }
+session_start();
+$mysqli = new mysqli("localhost", "user", "password", "database");
+
+$method = $_SERVER["REQUEST_METHOD"];
+
+if ($method === "GET") {
+    $mode = $_GET["mode"] ?? "session"; // Standard: Session-Modus
+    if ($mode === "session") {
+        echo json_encode(["success" => true, "entries" => $_SESSION["initiative_list"] ?? []]);
+    } else {
+        $stmt = $mysqli->prepare("SELECT * FROM initiative WHERE user_id = ? AND fight_name = ?");
+        $stmt->bind_param("is", $_SESSION["user_id"], $_GET["fight_name"]);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        echo json_encode(["success" => true, "entries" => $result->fetch_all(MYSQLI_ASSOC)]);
+    }
+}
+if ($method === "POST") {
+    $input = json_decode(file_get_contents("php://input"), true);
+    $mode = $input["mode"] ?? "session";
+
+    if ($mode === "session") {
+        $_SESSION["initiative_list"][] = $input;
+        echo json_encode(["success" => true]);
+    } else {
+        $stmt = $mysqli->prepare("INSERT INTO initiative (user_id, fight_name, name, initiative, hp_status, type, turn_order) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ississi", $_SESSION["user_id"], $input["fight_name"], $input["name"], $input["initiative"], $input["hp"], $input["type"], 0);
+        $stmt->execute();
+        echo json_encode(["success" => true]);
+    }
+}
+if ($method === "DELETE") {
+    $mode = $_GET["mode"] ?? "session";
+    if ($mode === "session") {
+        $_SESSION["initiative_list"] = [];
+        echo json_encode(["success" => true]);
+    } else {
+        $stmt = $mysqli->prepare("DELETE FROM initiative WHERE user_id = ? AND fight_name = ?");
+        $stmt->bind_param("is", $_SESSION["user_id"], $_GET["fight_name"]);
+        $stmt->execute();
+        echo json_encode(["success" => true]);
+    }
+}
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if ($_GET['mode'] === 'session') {
+        echo json_encode(["success" => true, "entries" => $_SESSION['initiative_list'] ?? []]);
+    } elseif ($_GET['mode'] === 'db' && isset($_GET['fight_name'])) {
+        $stmt = $pdo->prepare("SELECT * FROM initiative_entries WHERE fight_name = ?");
+        $stmt->execute([$_GET['fight_name']]);
+        echo json_encode(["success" => true, "entries" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+    }
+}
+
 
 $conn->close();
 ?>

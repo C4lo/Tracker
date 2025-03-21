@@ -4,57 +4,205 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Initiative Tracker - DM</title>
+    <script src="/initiativeTracker/script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   </head>
-  <body>
-    <header>
-      <h1>Initiative Tracker - DM Verwaltung</h1>
-      <div class="user-menu">
-        <a href="/initiativeTracker/users/login.html" id="loginButton">Login</a>
-      </div>
-      <div class="user-menu">
-        <span id="userName">Willkommen, Benutzer!</span>
-        <a href="#" id="logoutButton">Logout</a>
-      </div>
-    </header>
-    <main>
-      <section id="entry-form">
-        <h2>Neuer Eintrag</h2>
-        <form id="initiative-form">
-          <label for="name">Name:</label>
-          <input type="text" id="name" name="name" required />
-
-          <label for="initiative">Initiative:</label>
-          <input type="number" id="initiative" name="initiative" required />
-
-          <label for="hp">HP Status:</label>
-          <select id="hp" name="hp">
-            <option value="Healthy">Healthy</option>
-            <option value="Wounded">Wounded</option>
-            <option value="Critical">Critical</option>
-          </select>
-
-          <label for="type">Typ:</label>
-          <select id="type" name="type">
-            <option value="Player">Spieler</option>
-            <option value="Monster">Monster</option>
-          </select>
-
-          <button type="submit">Hinzufügen</button>
-        </form>
-      </section>
-
-      <section id="initiative-table">
-        <h2>Aktuelle Einträge</h2>
-        <div id="initiative-list"></div>
-      </section>
-      <button onclick="nextTurn()">Nächster Zug</button>
-    </main>
-    <footer>
-      <button onclick="window.location.href='../view/index.html'">
-        Zur Spieleransicht
+  <body class="bg-zinc-900 text-white">
+    <!-- Navbar für Mobile und Desktop -->
+    <header class="bg-sky-500 p-4 flex justify-between items-center">
+      <h1 class="text-lg font-bold text-gold-500">Initiative Tracker</h1>
+      <button id="menuToggle" class="lg:hidden bg-zinc-700 p-2 rounded-md">
+        ☰
       </button>
-    </footer>
-    <script src="../script.js"></script>
+      <nav class="hidden lg:flex space-x-4">
+        <a
+          href="/initiativeTracker/users/login.html"
+          class="px-4 py-2 bg-zinc-700 rounded-md hover:bg-zinc-600"
+          >Login</a
+        >
+        <a
+          href="#"
+          id="logoutButton"
+          class="px-4 py-2 bg-red-700 rounded-md hover:bg-red-600"
+          >Logout</a
+        >
+      </nav>
+    </header>
+
+    <div class="flex h-screen">
+      <!-- Sidebar (ausblendbar für Mobile) -->
+      <aside
+        id="sidebar"
+        class="w-64 bg-zinc-800 p-6 flex flex-col space-y-4 fixed inset-y-0 left-0 transform -translate-x-full transition-transform lg:translate-x-0 lg:relative z-50"
+      >
+        <h1 class="text-2xl font-bold text-gold-500">DM Panel</h1>
+        <nav class="space-y-2">
+          <a
+            href="#"
+            class="block py-2 px-4 rounded-lg bg-zinc-900 hover:bg-zinc-700"
+            >Dashboard</a
+          >
+          <a
+            href="#entry-form"
+            class="block py-2 px-4 rounded-lg bg-zinc-900 hover:bg-zinc-700"
+            >Neuer Eintrag</a
+          >
+          <a
+            href="#initiative-table"
+            class="block py-2 px-4 rounded-lg bg-zinc-900 hover:bg-zinc-700"
+            >Initiative Liste</a
+          >
+          <a>
+            <label for="fight_mode" class="text-zinc-300">Modus:</label>
+            <select
+              id="fight_mode"
+              class="h-10 w-full bg-zinc-700 text-white p-2 rounded-md"
+            >
+              <option value="session">Spontaner Kampf</option>
+              <option value="db">Geplanter Kampf</option>
+            </select>
+
+            <div id="fight_name_container" style="display: none">
+              <label for="fight_name" class="text-zinc-300">Kampfname:</label>
+              <input
+                type="text"
+                id="fight_name"
+                class="h-10 w-full bg-zinc-700 text-white p-2 rounded-md"
+              />
+            </div>
+          </a>
+          <a>
+            <button
+              type="submit"
+              onclick="addEntry(event, document.getElementById('fight_mode').value, document.getElementById('fight_name').value)"
+            >
+              Hinzufügen
+            </button>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Hauptinhalt -->
+      <main class="flex-1 p-6">
+        <!-- Eintrag Form -->
+        <section
+          id="entry-form"
+          class="max-w-3xl mx-auto p-6 bg-zinc-800 rounded-lg shadow-lg"
+        >
+          <h2 class="text-xl font-bold text-gold-500 mb-4 text-center">
+            Neuer Eintrag
+          </h2>
+          <form id="initiative-form" class="flex flex-col space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="name" class="text-zinc-300">Name:</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  required
+                  class="h-10 w-full bg-zinc-700 text-white p-2 rounded-md focus:ring-2 focus:ring-gold-500"
+                />
+              </div>
+              <div>
+                <label for="initiative" class="text-zinc-300"
+                  >Initiative:</label
+                >
+                <input
+                  type="number"
+                  id="initiative"
+                  name="initiative"
+                  required
+                  class="h-10 w-full bg-zinc-700 text-white p-2 rounded-md focus:ring-2 focus:ring-gold-500"
+                />
+              </div>
+              <div>
+                <label for="hp" class="text-zinc-300">HP Status:</label>
+                <select
+                  id="hp"
+                  name="hp"
+                  class="h-10 w-full bg-zinc-700 text-white p-2 rounded-md focus:ring-2 focus:ring-gold-500"
+                >
+                  <option value="Healthy">Healthy</option>
+                  <option value="Wounded">Wounded</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+              <div>
+                <label for="type" class="text-zinc-300">Typ:</label>
+                <select
+                  id="type"
+                  name="type"
+                  class="h-10 w-full bg-zinc-700 text-white p-2 rounded-md focus:ring-2 focus:ring-gold-500"
+                >
+                  <option value="Player">Spieler</option>
+                  <option value="Monster">Monster</option>
+                </select>
+              </div>
+            </div>
+            <button
+              type="submit"
+              class="h-10 w-full bg-sky-500 text-white font-bold rounded-md hover:bg-sky-700 transition"
+            >
+              Hinzufügen
+            </button>
+          </form>
+        </section>
+
+        <!-- Aktuelle Einträge -->
+        <section
+          id="initiative-table"
+          class="relative max-w-4xl mx-auto p-6 bg-zinc-800 rounded-lg shadow-lg mt-8 min-h-[300px]"
+        >
+          <h2
+            class="absolute top-0 left-1/2 -translate-x-1/2 text-xl font-bold text-gold-500 bg-zinc-900 px-4 py-2 rounded-md"
+          >
+            Aktuelle Einträge
+          </h2>
+          <div
+            id="initiative-list"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-12"
+          >
+            <div
+              class="bg-zinc-800 text-white p-4 rounded-lg shadow-md border-2 border-blue-400"
+            >
+              <h3 class="text-lg font-bold">Ork/Oger</h3>
+              <p>Initiative: 3</p>
+              <p>HP: Healthy</p>
+              <button
+                class="mt-2 bg-red-600 text-white px-2 py-1 rounded-md hover:bg-red-800 transition"
+              >
+                Löschen
+              </button>
+            </div>
+          </div>
+          <button
+            onclick="nextTurn()"
+            class="mt-6 w-full h-12 bg-sky-500 text-white font-bold rounded-md hover:bg-sky-700 transition text-lg"
+          >
+            Nächster Zug
+          </button>
+        </section>
+      </main>
+    </div>
+    <script>
+      document
+        .getElementById("fight_mode")
+        .addEventListener("change", function () {
+          document.getElementById("fight_name_container").style.display =
+            this.value === "db" ? "block" : "none";
+        });
+    </script>
+
+    <script>
+      // Sidebar Toggle für Mobile
+      document
+        .getElementById("menuToggle")
+        .addEventListener("click", function () {
+          document
+            .getElementById("sidebar")
+            .classList.toggle("-translate-x-full");
+        });
+    </script>
   </body>
 </html>
