@@ -3,18 +3,68 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Initiative Tracker</title>
+    <!-- Link to your restructured CSS file -->
+    <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <header class="hero">
-      <div class="hero-content">
-        <h1>👾 Jérôme – Webentwickler & Code-Abenteurer</h1>
-        <p>Level up your projects with creativity & clean code!</p>
-        <button class="cta-btn">🚀 Enter Portfolio</button>
+    <!-- Header for Session Management -->
+    <header class="session-header">
+      <div class="user-info">
+        Welcome, <span id="username-display">Loading...</span>!
       </div>
-      <h1 class="text-4xl font-bold text-blue-500">Hello Tailwind!</h1>
+      <div class="party-info">
+        <!-- We can later add a dropdown to select a party -->
+        Current Party: <span id="party-name-display">None</span>
+      </div>
+      <button id="logout-button" class="button">Logout</button>
     </header>
-    <script src="script.js" defer></script>
+
+    <!-- Main Container for the Application -->
+    <div class="container">
+      <h1>Initiative Tracker</h1>
+
+      <!-- Form to Add New Characters/Monsters -->
+      <div class="form-container">
+        <form id="add-character-form">
+          <div class="form-group">
+            <label for="name">Name:</label>
+            <input
+              type="text"
+              id="name"
+              placeholder="Character or Monster Name"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="initiative">Initiative:</label>
+            <input
+              type="number"
+              id="initiative"
+              placeholder="e.g., 15"
+              required
+            />
+          </div>
+          <button type="submit" class="button add-button">
+            Add to Tracker
+          </button>
+        </form>
+      </div>
+
+      <!-- The list where characters will be displayed -->
+      <ul id="character-list" class="character-list">
+        <!-- Characters will be dynamically inserted here by JavaScript -->
+      </ul>
+
+      <!-- Action buttons for managing the tracker -->
+      <div class="controls">
+        <button id="next-turn" class="button">Next Turn</button>
+        <button id="sort" class="button">Sort by Initiative</button>
+        <button id="clear-all" class="button clear-button">Clear All</button>
+      </div>
+    </div>
+
+    <!-- Link to your restructured main JavaScript file -->
+    <script src="js/script.js"></script>
   </body>
 </html>

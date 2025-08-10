@@ -1,0 +1,96 @@
+/* ===== Grundlayout ===== */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.container {
+  max-width: 800px;
+  margin: 2em auto;
+  padding: 1em;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+h1, h2, h3 {
+  color: #1f2937;
+}
+
+
+/* ===== Buttons & Formulare ===== */
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.5em;
+  margin-top: 0.25em;
+  margin-bottom: 1em;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+button,
+input[type="submit"] {
+  background-color: #3b82f6;
+  color: #fff;
+  padding: 0.5em 1em;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover,
+input[type="submit"]:hover {
+  background-color: #2563eb;
+}
+
+
+/* ===== Event-Karten ===== */
+.event-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 1em;
+  margin-bottom: 1.5em;
+  background: #f9fafb;
+}
+
+
+/* ===== Responsive Layout ===== */
+@media (max-width: 600px) {
+  .container {
+    margin: 1em;
+    padding: 1em;
+  }
+  h2 {
+    font-size: 1.4em;
+  }
+}
+
+
+/* ===== Thematische Hintergründe ===== */
+.event-dnd {
+  background: url('img/dnd.png') center/cover no-repeat;
+  color: white;
+  text-shadow: 1px 1px 2px black;
+}
+
+.event-starwars {
+  background: url('img/starwars.png') center/cover no-repeat;
+  color: #f1f5f9;
+  text-shadow: 0 0 2px #000;
+}
+
+.event-spieleabend {
+  background: url('img/spieleabend.png') center/cover no-repeat;
+  color: #1e293b;
+  text-shadow: 1px 1px 0 #fff;
+}
