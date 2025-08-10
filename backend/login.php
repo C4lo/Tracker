@@ -36,8 +36,8 @@ if ($result->num_rows === 1) {
         // Password is correct!
         // 7. Store user data in the session.
         // This is how the server "remembers" who is logged in across different pages.
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
+        $_SESSION['user_id'] = $row['id'];
+        $_SESSION['username'] = $row['username'];
         $_SESSION['role']=$row['role'];
         echo "Login successful!";
 
