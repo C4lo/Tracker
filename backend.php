@@ -4,16 +4,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, DELETE");
 header("Access-Control-Allow-Headers: Content-Type");
 
-// Datenbankverbindung
-$host = "ht7m.your-database.de";  
-$user = "jerome_tracker_w";  
-$pass = "KTMf57rhQ17d9zjd";  
-$dbname = "initiative_tracker"; 
-
-$pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass, [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-]);
+require_once __DIR__ . '/backend/db_connect.php';
 
 $method = $_SERVER["REQUEST_METHOD"];
 
@@ -29,9 +20,10 @@ if ($method === "GET") {
         $query .= " WHERE fight_name = ?";
         $params[] = $fight_name;
     }
-    
+
+    $query .= " ORDER BY initiative DESC";
+
     $stmt = $pdo->prepare($query);
-    $stmt = $pdo->prepare("SELECT * FROM initiative ORDER BY initiative DESC");
     $stmt->execute($params);
     $entries = $stmt->fetchAll();
 

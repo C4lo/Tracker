@@ -10,7 +10,8 @@ if (!in_array($role, ['gm','admin'])) { http_response_code(403); exit; }
 
 require_once __DIR__ . '/../backend/db_connect.php';
 
-$id = (int)($_POST['id'] ?? 0);
+$data = json_decode(file_get_contents('php://input'), true);
+$id = (int)($data['id'] ?? 0);
 if ($id <= 0) { http_response_code(400); echo json_encode(['ok'=>false]); exit; }
 
 $stmt = $pdo->prepare("UPDATE initiative_submissions SET processed = 1 WHERE id = ?");

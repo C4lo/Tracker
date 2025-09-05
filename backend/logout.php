@@ -1,15 +1,10 @@
 <?php
-ini_set('session.cookie_path', '/'); // hilft, falls Pfad-Probleme auftreten
+ini_set('session.cookie_path', '/');
 session_start();
-// backend/logout.php
-session_start(); // Resume the session
 
-// Unset all session variables
-$_SESSION = array();
-
-// Destroy the session
+$_SESSION = [];
 session_destroy();
 
-// Send a success message back
-echo "Logout successful.";
+header('Content-Type: application/json');
+echo json_encode(['status' => 'success']);
 ?>

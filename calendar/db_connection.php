@@ -1,8 +1,8 @@
 <?php
-$host = 'ht7m.your-database.de';
-$db   = 'initiative_tracker';
-$user = 'jerome_tracker';
-$pass = 'h6akkvAgUC33Px3q';
+$host = getenv('DB_HOST') ?: 'localhost';
+$db   = getenv('DB_NAME') ?: 'initiative_tracker';
+$user = getenv('DB_USER') ?: 'root';
+$pass = getenv('DB_PASS') ?: '';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

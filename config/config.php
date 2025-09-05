@@ -1,8 +1,8 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = ""; // XAMPP/WAMP: Standard ist leer
-$dbname = "dnd_database";
+$servername = getenv('DB_HOST') ?: 'localhost';
+$username = getenv('DB_USER') ?: 'root';
+$password = getenv('DB_PASS') ?: '';
+$dbname = getenv('DB_NAME') ?: 'dnd_database';
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
