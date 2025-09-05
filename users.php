@@ -8,24 +8,22 @@ header("Access-Control-Allow-Methods: GET, POST");
 header("Access-Control-Allow-Headers: Content-Type");
 
 // Datenbankverbindung
-$host = "ht7m.your-database.de";
-$user = "jerome_tracker_w";
-$pass = "KTMf57rhQ17d9zjd";
-$dbname = "initiative_tracker";
+$host = getenv('DB_HOST') ?: 'localhost';
+$user = getenv('DB_USER') ?: 'root';
+$pass = getenv('DB_PASS') ?: '';
+$dbname = getenv('DB_NAME') ?: 'initiative_tracker';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
-
 if ($conn->connect_error) {
     die(json_encode(["success" => false, "message" => "Datenbankverbindung fehlgeschlagen: " . $conn->connect_error]));
 }
 
-// 👇 Aktion aus dem GET-Parameter abrufen
 $action = $_GET["action"] ?? "";
 
 // 🏗 **1. Neue Party erstellen**
 if ($action == "create_party") {
     $data = json_decode(file_get_contents("php://input"), true);
-    
+
     if (!isset($data["name"], $data["dm_id"])) {
         echo json_encode(["success" => false, "message" => "Fehlende Daten"]);
         exit;
@@ -33,11 +31,10 @@ if ($action == "create_party") {
 
     $stmt = $conn->prepare("INSERT INTO parties (name) VALUES (?)");
     $stmt->bind_param("s", $data["name"]);
-    
+
     if ($stmt->execute()) {
         $party_id = $stmt->insert_id;
 
-        // Füge den DM als Party-Mitglied hinzu
         $stmt2 = $conn->prepare("INSERT INTO party_members (user_id, party_id, role) VALUES (?, ?, 'DM')");
         $stmt2->bind_param("ii", $data["dm_id"], $party_id);
         $stmt2->execute();
@@ -53,14 +50,14 @@ if ($action == "create_party") {
 // 👤 **2. Spieler einer Party hinzufügen**
 elseif ($action == "add_user_to_party") {
     $data = json_decode(file_get_contents("php://input"), true);
-    
+
     if (!isset($data["user_id"], $data["party_id"], $data["role"])) {
         echo json_encode(["success" => false, "message" => "Fehlende Daten"]);
         exit;
     }
 
     $stmt = $conn->prepare("INSERT INTO party_members (user_id, party_id, role) VALUES (?,?,?)");
-    $stmt->bind_param("ii", $data["user_id"], $data["party_id"], $data["role"]);
+    $stmt->bind_param("iis", $data["user_id"], $data["party_id"], $data["role"]);
 
     if ($stmt->execute()) {
         echo json_encode(["success" => true]);
@@ -79,16 +76,11 @@ elseif ($action == "get_party_members") {
         exit;
     }
 
-    $stmt = $conn->prepare("
-        SELECT p.id, p.name, pm.role
-        FROM parties p 
-        JOIN party_members pm ON p.id = pm.party_id
-        WHERE up.user_id = ?
-    ");
+    $stmt = $conn->prepare("SELECT p.id, p.name, pm.role FROM parties p JOIN party_members pm ON p.id = pm.party_id WHERE pm.user_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     $parties = [];
     while ($row = $result->fetch_assoc()) {
         $parties[] = $row;

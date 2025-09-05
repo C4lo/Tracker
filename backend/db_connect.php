@@ -1,22 +1,27 @@
 <?php
-ini_set('session.cookie_path', '/'); // hilft, falls Pfad-Probleme auftreten
-session_start();
-// backend/db_connect.php
+/**
+ * Central database connection using PDO.
+ * Credentials are read from environment variables:
+ *  - DB_HOST
+ *  - DB_NAME
+ *  - DB_USER
+ *  - DB_PASS
+ */
+$host = getenv('DB_HOST') ?: 'localhost';
+$db   = getenv('DB_NAME') ?: 'initiative_tracker';
+$user = getenv('DB_USER') ?: 'root';
+$pass = getenv('DB_PASS') ?: '';
 
-// --- Database Credentials ---
-$db_host = 'ht7m.your-database.de';
-$db_user = 'jerome_tracker'; // Or your specific database username
-$db_pass = 'h6akkvAgUC33Px3q';     // Or your specific database password
-$db_name = 'initiative_tracker'; // Your database name
+$dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
+$options = [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+];
 
-// --- Establish Connection ---
-$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
-
-// --- Check for Connection Errors ---
-// This check is crucial. If it fails, the script will stop here.
-if ($conn->connect_error) {
-    // Stop everything and report the error.
-    die("Database Connection Failed: " . $conn->connect_error);
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Database connection failed']);
+    exit;
 }
-
-?>

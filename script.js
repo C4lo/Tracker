@@ -1,11 +1,8 @@
 const API_URL = "/initiativeTracker/backend.php"; // Stelle sicher, dass der Pfad korrekt ist
 
 // Holt die Initiative-Liste vom Server
-async function fetchInitiativeList(mode = "session", fight_name = "") {
-  const url =
-    mode === "session"
-      ? `${API_URL}?mode=session`
-      : `${API_URL}?mode=db&fight_name=${fight_name}`;
+async function fetchInitiativeList() {
+  const url = `${API_URL}?mode=session`;
 
   try {
     const response = await fetch(url);
@@ -58,13 +55,17 @@ function renderList(entries) {
 async function addEntry(event) {
   event.preventDefault();
 
+  const hpEl = document.getElementById("hp");
+  const typeEl = document.getElementById("type");
+  const modeEl = document.getElementById("fight_mode");
+  const nameEl = document.getElementById("fight_name");
   const data = {
     name: document.getElementById("name").value,
     initiative: parseInt(document.getElementById("initiative").value),
-    hp: document.getElementById("hp").value,
-    type: document.getElementById("type").value,
-    fight_mode: document.getElementById("fight_mode").value,
-    fight_name: document.getElementById("fight_name").value || null,
+    hp: hpEl ? hpEl.value : null,
+    type: typeEl ? typeEl.value : null,
+    fight_mode: modeEl ? modeEl.value : null,
+    fight_name: nameEl ? nameEl.value || null : null,
   };
 
   try {
@@ -137,8 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   //Live-Update alle 5s
   setInterval(() => {
-    const mode = document.getElementById("fight_mode").value;
-    const fightName = document.getElementById("fight_name").value;
-    fetchInitiativeList(mode, fightName);
+    fetchInitiativeList();
   }, 5000);
 });

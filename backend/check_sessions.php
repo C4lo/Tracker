@@ -7,11 +7,10 @@ header('Content-Type: application/json');
 
 if (isset($_SESSION['user_id'])) {
     echo json_encode([
-        'loggedIn' => true,
+        'status' => 'success',
         'username' => $_SESSION['username'] ?? null,
-        // ------> hier einfügen ------
         'role' => $_SESSION['role'] ?? 'player'
     ]);
 } else {
-    echo json_encode(['loggedIn' => false]);
+    echo json_encode(['status' => 'error']);
 }
